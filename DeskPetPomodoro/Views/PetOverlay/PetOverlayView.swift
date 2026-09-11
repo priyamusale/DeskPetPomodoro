@@ -44,7 +44,7 @@ struct PetOverlayView: View {
                 // If sleeping, tapping also wakes it up (handled if timer starts, but we can immediately wake it)
                 if petVM.isSleeping {
                     petVM.isSleeping = false
-                    petVM.showSpeech("Hi Priya!")
+                    petVM.showSpeech("Hi \(petVM.userFirstName)!")
                 }
             }
             

@@ -22,6 +22,11 @@ class PetViewModel: ObservableObject {
         sleepTimer?.invalidate()
     }
     
+    var userFirstName: String {
+        let fullName = NSFullUserName()
+        return fullName.components(separatedBy: " ").first ?? "Friend"
+    }
+    
     // MARK: Walk Control
     
     func startWalking() {
@@ -30,7 +35,7 @@ class PetViewModel: ObservableObject {
         isSleeping = false
         
         if wasSleeping || !isActive {
-            showSpeech("Hi Priya!")
+            showSpeech("Hi \(userFirstName)!")
         }
         
         guard !isActive else { return }
@@ -126,7 +131,7 @@ class PetViewModel: ObservableObject {
     
     @objc private func onWagerCompleted() {
         DispatchQueue.main.async {
-            self.showSpeech("Good job, P!")
+            self.showSpeech("Good job, \(self.userFirstName)!")
         }
     }
 }
