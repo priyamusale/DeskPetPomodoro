@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "idiom" : "mac",
+      "filename" : "desk_background.jpg"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
