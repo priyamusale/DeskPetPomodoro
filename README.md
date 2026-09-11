@@ -2,7 +2,7 @@
 
 Welcome to DeskPet Pomodoro! This is a beautiful, aesthetic macOS Pomodoro timer and daily planner that features a cute virtual desk pet, a physical notebook aesthetic, and real-time coworking features.
 
-![DeskPet Pomodoro Screenshot](screenshot.png)
+<img width="162" height="178" alt="image" src="https://github.com/user-attachments/assets/40ede813-10f7-4c41-aa77-d2a4322fd1e9" />
 
 ## Features
 - **Virtual Pet**: A cute pet that hangs out with you while you work. Feed it treats, watch it sleep, and earn coins!
