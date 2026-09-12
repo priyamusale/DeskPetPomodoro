@@ -15,7 +15,13 @@ class TaskViewModel: ObservableObject {
     // MARK: Derived
 
     init() {
-        // No longer observing dailyGoalAddedNotification as auto-generation handles it
+        // Automatically refresh when the day changes or app wakes up
+        NotificationCenter.default.addObserver(forName: .NSCalendarDayChanged, object: nil, queue: .main) { [weak self] _ in
+            self?.fetchTasks()
+        }
+        NotificationCenter.default.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.fetchTasks()
+        }
     }
     
     private func addGoalTask(title: String) {
