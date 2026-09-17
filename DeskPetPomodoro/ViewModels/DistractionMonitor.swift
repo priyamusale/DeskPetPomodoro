@@ -46,11 +46,7 @@ class DistractionMonitor: ObservableObject {
     
     private func checkActiveTab() {
         let scriptSource = """
-        tell application "System Events"
-            set activeApp to name of first application process whose frontmost is true
-        end tell
-        
-        if activeApp is "Google Chrome" then
+        if application "Google Chrome" is running then
             tell application "Google Chrome"
                 if (count of windows) > 0 then
                     return URL of active tab of front window
@@ -69,6 +65,9 @@ class DistractionMonitor: ObservableObject {
             if let urlString = result.stringValue {
                 handleURL(urlString)
             } else {
+                if let error = error {
+                    print("AppleScript Error: \(error)")
+                }
                 resetCounter()
             }
         } else {
@@ -84,12 +83,16 @@ class DistractionMonitor: ObservableObject {
         
         let isDistracted = blacklistedDomains.contains { urlString.lowercased().contains($0) }
         
+        print("Tough Love Check -> URL: \(urlString) | isDistracted: \(isDistracted) | Consecutive: \(consecutiveDistractedSeconds)")
+        
         if isDistracted {
             consecutiveDistractedSeconds += 5
             
             if consecutiveDistractedSeconds >= punishmentThresholdSeconds {
+                print("Tough Love -> Punishing!")
                 punishAndCloseTab()
             } else if consecutiveDistractedSeconds >= warningThresholdSeconds && !hasWarned {
+                print("Tough Love -> Warning!")
                 warnUser()
             }
         } else {
