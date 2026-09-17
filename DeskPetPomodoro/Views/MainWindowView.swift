@@ -90,7 +90,7 @@ struct MainWindowView: View {
                     .frame(width: plannerWidth, height: plannerHeight)
                     .rotationEffect(.degrees(0.5))
                     .shadow(color: .black.opacity(0.15), radius: 8, x: 2, y: 4)
-                    .padding(.trailing, 40) // Added to give space for sticky tabs
+                    .padding(.trailing, 80) // Increased to give more space for sticky tabs
                     
                     VStack {
                         TimerPanelView()
