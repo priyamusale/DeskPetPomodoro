@@ -64,6 +64,19 @@ class PomodoroViewModel: ObservableObject {
         let s = Int(timeRemaining) % 60
         return String(format: "%02d:%02d", m, s)
     }
+    
+    var timePassedString: String {
+        let total: TimeInterval
+        switch phase {
+        case .shortBreak: total = breakDuration
+        case .longBreak: total = longBreakDuration
+        default: total = workDuration
+        }
+        let passed = max(0, total - timeRemaining)
+        let m = Int(passed) / 60
+        let s = Int(passed) % 60
+        return String(format: "%02d:%02d", m, s)
+    }
 
     var phaseLabel: String {
         switch phase {
