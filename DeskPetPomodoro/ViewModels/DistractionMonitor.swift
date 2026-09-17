@@ -17,7 +17,7 @@ class DistractionMonitor: ObservableObject {
     private var timer: Timer?
     private var consecutiveDistractedSeconds = 0
     
-    private let blacklistedDomains = ["youtube.com", "instagram.com", "tiktok.com"]
+    private let blacklistedDomains = ["youtube.com", "instagram.com", "tiktok.com", "facebook.com"]
     
     // Configurable thresholds for testing
     // Currently set to 10 seconds for warning, 20 seconds for closing the tab.
