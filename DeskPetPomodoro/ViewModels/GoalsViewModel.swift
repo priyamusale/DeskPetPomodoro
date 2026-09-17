@@ -47,6 +47,14 @@ class GoalsViewModel: ObservableObject {
         loadGoals()
     }
     
+    func updateMilestone(_ milestone: Milestone, startDate: Date, endDate: Date, score: Double?) {
+        milestone.startDate = startDate
+        milestone.endDate = endDate
+        milestone.quizScore = score
+        try? modelContext?.save()
+        loadGoals()
+    }
+    
     func deleteGoal(_ goal: LongTermGoal) {
         modelContext?.delete(goal)
         try? modelContext?.save()

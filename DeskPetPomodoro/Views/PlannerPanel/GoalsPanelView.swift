@@ -173,15 +173,20 @@ struct GoalRowView: View {
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundColor(.green)
                         } else {
-                            Button(action: {
-                                selectedMilestone = ms
-                            }) {
-                                Text("Pending Quiz")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(.orange)
-                            }
-                            .buttonStyle(.plain)
+                            Text("Pending Quiz")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.orange)
                         }
+                        
+                        Button(action: {
+                            selectedMilestone = ms
+                        }) {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 10))
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.leading, 4)
                     }
                 }
             }
@@ -221,47 +226,79 @@ struct GoalRowView: View {
         .background(Color.black.opacity(0.03))
         .cornerRadius(8)
         .sheet(item: $selectedMilestone) { ms in
-            QuizEntryView(milestone: ms)
+            MilestoneEditView(milestone: ms)
         }
     }
 }
-struct QuizEntryView: View {
+struct MilestoneEditView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var goalsVM: GoalsViewModel
     @Bindable var milestone: Milestone
     
     @State private var scoreString: String = ""
+    @State private var startDate: Date = Date()
+    @State private var endDate: Date = Date()
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Complete Milestone")
+            Text("Edit Milestone")
                 .font(.headline)
             
-            Text("Enter your score for '\(milestone.title)' (0 - 100):")
-                .font(.subheadline)
-                .multilineTextAlignment(.center)
+            VStack(alignment: .leading, spacing: 12) {
+                Text(milestone.title)
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                
+                HStack {
+                    Text("Start Date:")
+                    Spacer()
+                    DatePicker("", selection: $startDate, displayedComponents: .date)
+                        .labelsHidden()
+                }
+                
+                HStack {
+                    Text("End Date:")
+                    Spacer()
+                    DatePicker("", selection: $endDate, displayedComponents: .date)
+                        .labelsHidden()
+                }
+                
+                HStack {
+                    Text("Score % (optional):")
+                    Spacer()
+                    TextField("0 - 100", text: $scoreString)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .frame(width: 80)
+                }
+            }
+            .padding(.vertical, 8)
             
-            TextField("Score %", text: $scoreString)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: 100)
-            
-            HStack {
+            HStack(spacing: 16) {
                 Button("Cancel") {
                     dismiss()
                 }
                 .foregroundColor(.red)
                 
-                Button("Submit") {
+                Button("Save") {
+                    var finalScore: Double? = nil
                     if let score = Double(scoreString) {
-                        let finalScore = max(0.0, min(1.0, score / 100.0))
-                        goalsVM.updateQuizScore(for: milestone, score: finalScore)
-                        dismiss()
+                        finalScore = max(0.0, min(1.0, score / 100.0))
                     }
+                    
+                    goalsVM.updateMilestone(milestone, startDate: startDate, endDate: endDate, score: finalScore)
+                    dismiss()
                 }
                 .buttonStyle(.borderedProminent)
             }
         }
         .padding()
-        .frame(width: 300)
+        .frame(width: 320)
+        .onAppear {
+            startDate = milestone.startDate
+            endDate = milestone.endDate
+            if let score = milestone.quizScore {
+                scoreString = String(Int(score * 100))
+            }
+        }
     }
 }
