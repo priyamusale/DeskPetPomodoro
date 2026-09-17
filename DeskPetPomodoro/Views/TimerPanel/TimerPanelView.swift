@@ -7,6 +7,7 @@ struct TimerPanelView: View {
     @Environment(\.openWindow) private var openWindow
     @State private var showingTimerMenu = false
     @State private var showCoworkingPanel = false
+    @ObservedObject var distractionMonitor = DistractionMonitor.shared
     
     var body: some View {
         VStack(spacing: 24) {
@@ -60,6 +61,11 @@ struct TimerPanelView: View {
                     CoworkingPanelView()
                         .frame(width: 300, height: 350)
                 }
+                
+                CircularIconButton(icon: distractionMonitor.isEnabled ? "eye.fill" : "eye.slash") {
+                    distractionMonitor.isEnabled.toggle()
+                }
+                .foregroundColor(distractionMonitor.isEnabled ? .blue : Color(hex: "#4A4A4A"))
                 
                 CircularIconButton(icon: "arrow.counterclockwise") {
                     pomodoroVM.resetSession()

@@ -31,15 +31,18 @@
 		91A8FF235535F58E4EFD121A /* cat_walking.png in Resources */ = {isa = PBXBuildFile; fileRef = BB8D6A83976899933CFDA0F2 /* cat_walking.png */; };
 		9E29C46D0BE951ADBF95770C /* PetCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D5838C0EF84A96A2192F37 /* PetCanvasView.swift */; };
 		AB8D05BADC263E17B6F026C9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02F49E323969C3CC62514A90 /* Assets.xcassets */; };
+		B1F928698550E9EE5CB0AA3A /* sleeping_cat_new.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4260029A49E31C94B9AE7ED7 /* sleeping_cat_new.jpg */; };
 		BE8028C973A2E1B5EA87987C /* DeskPetPomodoroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C9D84A7D9226FD2F73CFAA3 /* DeskPetPomodoroApp.swift */; };
 		C3A673389FA1F08C3AAB11B3 /* sleeping_dog.webp in Resources */ = {isa = PBXBuildFile; fileRef = 30358BAFFCA2CBB79909846D /* sleeping_dog.webp */; };
 		C977E7220F5846E0C74DE9A4 /* TaskViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA4C68A41BE6983C77FE181 /* TaskViewModel.swift */; };
 		CE4B66B1CF1E201DEF826C2B /* dog_walking.png in Resources */ = {isa = PBXBuildFile; fileRef = 721834E455EE1FD033C35BC6 /* dog_walking.png */; };
+		CFB05E649DBEBE3A1C88911B /* DistractionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A20E35186F06E26DE750A4 /* DistractionMonitor.swift */; };
 		DE96277D256D6EAC1EA8191C /* GoalsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F24D035C8A87302FA02B26E /* GoalsViewModel.swift */; };
 		E0B340F2F25F9278855F613B /* PomodoroPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006DA84608019EA4C0E1FFC5 /* PomodoroPhase.swift */; };
 		EB2110F37D5B775E88585A51 /* PlannerPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF1644DEE216661E158E0CDB /* PlannerPanelView.swift */; };
 		F3536D8ADF38F15930A26827 /* Goal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A40B19A823C77C1AB1BFE0 /* Goal.swift */; };
 		F82A370B8F5EF65D4989D594 /* TodoTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35B22E4B4B0F8D68C60A7B8E /* TodoTask.swift */; };
+		FC1F600232D8CB6BA0383486 /* sleeping_dog_new.jpg in Resources */ = {isa = PBXBuildFile; fileRef = C74C331B2C6AC985570FBF20 /* sleeping_dog_new.jpg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +56,7 @@
 		3C9D84A7D9226FD2F73CFAA3 /* DeskPetPomodoroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskPetPomodoroApp.swift; sourceTree = "<group>"; };
 		3CF669CDEA159F3A54F8F19E /* PetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetViewModel.swift; sourceTree = "<group>"; };
 		4020682B93CE951CBB77AF6D /* GoalsPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsPanelView.swift; sourceTree = "<group>"; };
+		4260029A49E31C94B9AE7ED7 /* sleeping_cat_new.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = sleeping_cat_new.jpg; sourceTree = "<group>"; };
 		47A40B19A823C77C1AB1BFE0 /* Goal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Goal.swift; sourceTree = "<group>"; };
 		4C220F54BBA4C510274B135B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4C32B626CF0D053703C0C5D3 /* PlannerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannerViewModel.swift; sourceTree = "<group>"; };
@@ -73,10 +77,12 @@
 		BD2A319D69488239D2D98DDA /* TodoPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoPanelView.swift; sourceTree = "<group>"; };
 		BECA9D0DCCA51DF550977BA9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C5C05F53D76AA7F498BF8166 /* PetOverlayWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetOverlayWindowController.swift; sourceTree = "<group>"; };
+		C74C331B2C6AC985570FBF20 /* sleeping_dog_new.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = sleeping_dog_new.jpg; sourceTree = "<group>"; };
 		DAD86CFAB729D10B5165241B /* TimerPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerPanelView.swift; sourceTree = "<group>"; };
 		DF1644DEE216661E158E0CDB /* PlannerPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannerPanelView.swift; sourceTree = "<group>"; };
 		F3DCB509B8106D1A0CFD1E6B /* PlannerNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannerNote.swift; sourceTree = "<group>"; };
 		F623F2B2CAF8DDD69E802023 /* DawningofaNewDay.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = DawningofaNewDay.ttf; sourceTree = "<group>"; };
+		F7A20E35186F06E26DE750A4 /* DistractionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistractionMonitor.swift; sourceTree = "<group>"; };
 		FFC2F2F0148972E2A14D002F /* DeskPetPomodoro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeskPetPomodoro.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -118,7 +124,9 @@
 				BB8D6A83976899933CFDA0F2 /* cat_walking.png */,
 				2146ADAC31064759218E66E9 /* desk_background.jpg */,
 				721834E455EE1FD033C35BC6 /* dog_walking.png */,
+				4260029A49E31C94B9AE7ED7 /* sleeping_cat_new.jpg */,
 				B97FC8D9CE233A661ABD2C15 /* sleeping_cat.jpg */,
+				C74C331B2C6AC985570FBF20 /* sleeping_dog_new.jpg */,
 				30358BAFFCA2CBB79909846D /* sleeping_dog.webp */,
 				EE096E79A58752E8C75A7EA5 /* Fonts */,
 			);
@@ -158,6 +166,7 @@
 		4B5BF5C42E7EB84BDE0482B9 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				F7A20E35186F06E26DE750A4 /* DistractionMonitor.swift */,
 				4F24D035C8A87302FA02B26E /* GoalsViewModel.swift */,
 				3CF669CDEA159F3A54F8F19E /* PetViewModel.swift */,
 				4C32B626CF0D053703C0C5D3 /* PlannerViewModel.swift */,
@@ -306,7 +315,9 @@
 				3824D3170BCE20016B43C53F /* desk_background.jpg in Resources */,
 				CE4B66B1CF1E201DEF826C2B /* dog_walking.png in Resources */,
 				8DFA18108EE22BDAB79C7B9C /* sleeping_cat.jpg in Resources */,
+				B1F928698550E9EE5CB0AA3A /* sleeping_cat_new.jpg in Resources */,
 				C3A673389FA1F08C3AAB11B3 /* sleeping_dog.webp in Resources */,
+				FC1F600232D8CB6BA0383486 /* sleeping_dog_new.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,6 +330,7 @@
 			files = (
 				6AADC9C05BA9A04BD843D5C1 /* AppDelegate.swift in Sources */,
 				BE8028C973A2E1B5EA87987C /* DeskPetPomodoroApp.swift in Sources */,
+				CFB05E649DBEBE3A1C88911B /* DistractionMonitor.swift in Sources */,
 				74D4A41ABF9EB1E7322CF0B2 /* Font+Custom.swift in Sources */,
 				F3536D8ADF38F15930A26827 /* Goal.swift in Sources */,
 				6DE33E462D56C5FB91486FB6 /* GoalsPanelView.swift in Sources */,

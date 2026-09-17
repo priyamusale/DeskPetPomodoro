@@ -14,6 +14,8 @@ class PetViewModel: ObservableObject {
     init() {
         setupNotifications()
         startSleepTimer()
+        NotificationCenter.default.addObserver(self, selector: #selector(onShowDistractionWarning), name: NSNotification.Name("showDistractionWarning"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onShowDistractionPunishment), name: NSNotification.Name("showDistractionPunishment"), object: nil)
     }
     
     deinit {
@@ -132,6 +134,20 @@ class PetViewModel: ObservableObject {
     @objc private func onWagerCompleted() {
         DispatchQueue.main.async {
             self.showSpeech("Good job, \(self.userFirstName)!")
+        }
+    }
+    
+    @objc private func onShowDistractionWarning() {
+        DispatchQueue.main.async {
+            self.isSleeping = false
+            self.showSpeech("You've been on a distracting site for a while! Get back to work!")
+        }
+    }
+    
+    @objc private func onShowDistractionPunishment() {
+        DispatchQueue.main.async {
+            self.isSleeping = false
+            self.showSpeech("I warned you! I closed that tab!")
         }
     }
 }
