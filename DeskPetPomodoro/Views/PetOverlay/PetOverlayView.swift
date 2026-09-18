@@ -70,7 +70,7 @@ struct PetOverlayView: View {
                 )
                 .frame(width: 72, height: 72)
                 .rotationEffect(.degrees(petVM.walkRotation))
-                .animation(.easeInOut(duration: 3.0), value: petVM.walkRotation)
+                .animation(.easeInOut(duration: 0.3), value: petVM.walkRotation)
                 .scaleEffect(pulseScale)
                 .onChange(of: petVM.showTreat) { newValue in
                     if newValue {

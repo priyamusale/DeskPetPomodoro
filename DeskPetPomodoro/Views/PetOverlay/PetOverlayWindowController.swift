@@ -130,7 +130,7 @@ class PetOverlayWindowController: NSWindowController {
         // Initial rotation
         DispatchQueue.main.async {
             self.petVM.facingRight = !petIsOnLeft
-            self.petVM.walkRotation = 270
+            self.petVM.walkRotation = petIsOnLeft ? 90 : 270
             self.petVM.startWalking()
         }
         
@@ -151,9 +151,9 @@ class PetOverlayWindowController: NSWindowController {
                 let currentY = startY + (tabBarY - startY) * CGFloat(p)
                 win.setFrameOrigin(NSPoint(x: startX, y: currentY))
             } else {
-                if self.petVM.walkRotation != 270 {
-                    self.petVM.walkRotation = 270
-                    self.petVM.facingRight = true
+                if self.petVM.walkRotation != 0 {
+                    self.petVM.walkRotation = 0
+                    self.petVM.facingRight = tabBarX > startX
                 }
                 
                 let p = (elapsed - timeUp) / timeAcross
@@ -201,12 +201,12 @@ class PetOverlayWindowController: NSWindowController {
         DispatchQueue.main.async {
             if distX > 0 {
                 // Moving horizontally back
-                self.petVM.walkRotation = 270
-                self.petVM.facingRight = true
+                self.petVM.walkRotation = 0
+                self.petVM.facingRight = endX > startX
             } else {
                 // Moving down only
-                self.petVM.walkRotation = 90
                 self.petVM.facingRight = petIsOnLeft
+                self.petVM.walkRotation = petIsOnLeft ? 90 : 270
             }
         }
         
@@ -230,8 +230,8 @@ class PetOverlayWindowController: NSWindowController {
                 // Transitioning to DOWN
                 if distX > 0 && (elapsed - timeAcross) < (1.0/60.0 * 2) {
                     DispatchQueue.main.async {
-                        self.petVM.walkRotation = 90 // 90 degrees to point head down
                         self.petVM.facingRight = petIsOnLeft
+                        self.petVM.walkRotation = petIsOnLeft ? 90 : 270
                     }
                 }
                 
