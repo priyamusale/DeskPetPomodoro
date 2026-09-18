@@ -129,8 +129,8 @@ class PetOverlayWindowController: NSWindowController {
         
         // Initial rotation
         DispatchQueue.main.async {
-            self.petVM.facingRight = petIsOnLeft
-            self.petVM.walkRotation = petIsOnLeft ? -90 : 90
+            self.petVM.facingRight = !petIsOnLeft
+            self.petVM.walkRotation = 270
             self.petVM.startWalking()
         }
         
@@ -151,9 +151,9 @@ class PetOverlayWindowController: NSWindowController {
                 let currentY = startY + (tabBarY - startY) * CGFloat(p)
                 win.setFrameOrigin(NSPoint(x: startX, y: currentY))
             } else {
-                if self.petVM.walkRotation != 0 {
-                    self.petVM.walkRotation = 0
-                    self.petVM.facingRight = tabBarX > startX
+                if self.petVM.walkRotation != 270 {
+                    self.petVM.walkRotation = 270
+                    self.petVM.facingRight = true
                 }
                 
                 let p = (elapsed - timeUp) / timeAcross
@@ -166,36 +166,89 @@ class PetOverlayWindowController: NSWindowController {
     @objc private func onCancelWalkAndGoHome() {
         guard isWalkingToClose else { return }
         walkTimer?.invalidate()
-        animateHomeQuickly(duration: 1.5)
+        animateHomeQuickly(duration: 60.0)
     }
     
     @objc private func onWalkBackHome() {
         walkTimer?.invalidate()
-        animateHomeQuickly(duration: 3.0)
+        animateHomeQuickly(duration: 60.0)
     }
     
     private func animateHomeQuickly(duration: TimeInterval) {
         guard let window = self.window else { return }
         
-        // If we are currently rotated, reset rotation immediately for the walk back
-        DispatchQueue.main.async {
-            self.petVM.walkRotation = 0
-            self.petVM.facingRight = self.homeX > window.frame.origin.x
+        walkTimer?.invalidate()
+        let startX = window.frame.origin.x
+        let startY = window.frame.origin.y
+        let endX = self.homeX
+        let endY = self.homeY
+        
+        let distX = abs(startX - endX)
+        let distY = abs(startY - endY)
+        let totalDist = distX + distY
+        
+        guard totalDist > 0 else {
+            self.finishWalkBack()
+            return
         }
         
-        NSAnimationContext.runAnimationGroup({ ctx in
-            ctx.duration = duration
-            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            window.animator().setFrameOrigin(NSPoint(x: homeX, y: homeY))
-        }) { [weak self] in
-            guard let self = self else { return }
-            DispatchQueue.main.async {
-                self.isWalkingToClose = false
-                self.petVM.walkRotation = 0
+        let timeAcross = duration * TimeInterval(distX / totalDist)
+        let timeDown = duration * TimeInterval(distY / totalDist)
+        
+        let startTime = Date()
+        let petIsOnLeft = (homeX + 70) < (NSScreen.main?.frame.midX ?? 0)
+        
+        DispatchQueue.main.async {
+            if distX > 0 {
+                // Moving horizontally back
+                self.petVM.walkRotation = 270
                 self.petVM.facingRight = true
-                if !self.pomodoroVM.isRunning {
-                    self.petVM.stopWalking()
+            } else {
+                // Moving down only
+                self.petVM.walkRotation = 90
+                self.petVM.facingRight = petIsOnLeft
+            }
+        }
+        
+        walkTimer = Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { [weak self] t in
+            guard let self = self, let win = self.window else { t.invalidate(); return }
+            let elapsed = Date().timeIntervalSince(startTime)
+            
+            if elapsed >= duration {
+                t.invalidate()
+                win.setFrameOrigin(NSPoint(x: endX, y: endY))
+                self.finishWalkBack()
+                return
+            }
+            
+            if elapsed < timeAcross {
+                // Moving ACROSS
+                let p = elapsed / timeAcross
+                let currentX = startX + (endX - startX) * CGFloat(p)
+                win.setFrameOrigin(NSPoint(x: currentX, y: startY))
+            } else {
+                // Transitioning to DOWN
+                if distX > 0 && (elapsed - timeAcross) < (1.0/60.0 * 2) {
+                    DispatchQueue.main.async {
+                        self.petVM.walkRotation = 90 // 90 degrees to point head down
+                        self.petVM.facingRight = petIsOnLeft
+                    }
                 }
+                
+                let p = (elapsed - timeAcross) / timeDown
+                let currentY = startY + (endY - startY) * CGFloat(p)
+                win.setFrameOrigin(NSPoint(x: endX, y: currentY))
+            }
+        }
+    }
+    
+    private func finishWalkBack() {
+        DispatchQueue.main.async {
+            self.isWalkingToClose = false
+            self.petVM.walkRotation = 0
+            self.petVM.facingRight = true
+            if !self.pomodoroVM.isRunning {
+                self.petVM.stopWalking()
             }
         }
     }
