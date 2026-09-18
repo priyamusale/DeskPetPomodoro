@@ -110,10 +110,12 @@ struct SpeechBubbleView: View {
     
     var body: some View {
         Text(text)
-            .font(.system(size: 14, weight: .bold))
+            .font(.system(size: 11, weight: .semibold))
             .foregroundColor(.black)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
             .background(
                 SpeechBubbleShape()
                     .fill(Color.white)

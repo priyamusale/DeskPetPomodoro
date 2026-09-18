@@ -126,26 +126,39 @@ class DistractionMonitor: ObservableObject {
     }
     
     private func punishAndCloseTab() {
-        let condition = blacklistedDomains.map { domain in
+        // Build the domain list as a quoted AppleScript list
+        let domainChecks = blacklistedDomains.map { domain in
             let keyword = domain.replacingOccurrences(of: ".com", with: "")
-            return "tURL contains \"\\(domain)\" or tURL contains \"\\(keyword)\" or tTitle contains \"\\(domain)\" or tTitle contains \"\\(keyword)\""
+            return "tURL contains \"\(domain)\" or tURL contains \"\(keyword)\""
         }.joined(separator: " or ")
         
+        // Collect (windowIndex, tabIndex) pairs first, then close in reverse
+        // to avoid index shifting while iterating
         let scriptSource = """
         if application "Google Chrome" is running then
             tell application "Google Chrome"
                 try
-                    repeat with w in windows
+                    set tabsToClose to {}
+                    repeat with wIdx from 1 to count of windows
                         try
-                            repeat with t in tabs of w
+                            set w to window wIdx
+                            repeat with tIdx from 1 to count of tabs of w
                                 try
-                                    set tURL to URL of t
-                                    set tTitle to title of t
-                                    if \(condition) then
-                                        close t
+                                    set tURL to URL of tab tIdx of w
+                                    if \(domainChecks) then
+                                        set end of tabsToClose to {wIdx, tIdx}
                                     end if
                                 end try
                             end repeat
+                        end try
+                    end repeat
+                    -- Close in reverse order so indices stay valid
+                    repeat with i from (count of tabsToClose) to 1 by -1
+                        try
+                            set pair to item i of tabsToClose
+                            set wIdx to item 1 of pair
+                            set tIdx to item 2 of pair
+                            close tab tIdx of window wIdx
                         end try
                     end repeat
                 end try
@@ -156,6 +169,7 @@ class DistractionMonitor: ObservableObject {
         var error: NSDictionary?
         if let script = NSAppleScript(source: scriptSource) {
             script.executeAndReturnError(&error)
+            if let err = error { print("Close tab error: \(err)") }
         }
         
         resetCounter()
