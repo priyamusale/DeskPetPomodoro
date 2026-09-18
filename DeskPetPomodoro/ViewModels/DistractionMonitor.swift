@@ -48,12 +48,20 @@ class DistractionMonitor: ObservableObject {
         if application "Google Chrome" is running then
             tell application "Google Chrome"
                 set allText to ""
-                repeat with w in windows
-                    set allText to allText & (name of w) & "|||"
-                    repeat with t in tabs of w
-                        set allText to allText & (URL of t) & "|||"
+                try
+                    repeat with w in windows
+                        try
+                            set allText to allText & (name of w) & "|||"
+                        end try
+                        try
+                            repeat with t in tabs of w
+                                try
+                                    set allText to allText & (URL of t) & "|||"
+                                end try
+                            end repeat
+                        end try
                     end repeat
-                end repeat
+                end try
                 return allText
             end tell
         else
@@ -126,15 +134,21 @@ class DistractionMonitor: ObservableObject {
         let scriptSource = """
         if application "Google Chrome" is running then
             tell application "Google Chrome"
-                repeat with w in windows
-                    repeat with t in tabs of w
-                        set tURL to URL of t
-                        set tTitle to title of t
-                        if \(condition) then
-                            close t
-                        end if
+                try
+                    repeat with w in windows
+                        try
+                            repeat with t in tabs of w
+                                try
+                                    set tURL to URL of t
+                                    set tTitle to title of t
+                                    if \(condition) then
+                                        close t
+                                    end if
+                                end try
+                            end repeat
+                        end try
                     end repeat
-                end repeat
+                end try
             end tell
         end if
         """
