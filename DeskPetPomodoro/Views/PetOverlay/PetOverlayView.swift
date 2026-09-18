@@ -55,35 +55,39 @@ struct PetOverlayView: View {
                     .offset(y: -40)
             }
             
+            let timerOffset: CGFloat = petVM.speechMessage != nil ? -120 : -75
+            
+            // Only show timer if there's no speech bubble (Wait, now we show it always)
+            if distractionMonitor.consecutiveDistractedSeconds > 0 {
+                Text(String(format: "%02d:%02d", distractionMonitor.consecutiveDistractedSeconds / 60, distractionMonitor.consecutiveDistractedSeconds % 60))
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(Color.red.opacity(0.85))
+                    .cornerRadius(6)
+                    .offset(y: timerOffset)
+                    .shadow(radius: 2)
+                    .animation(.spring(), value: timerOffset)
+            } else if pomodoroVM.isRunning {
+                Text(pomodoroVM.timePassedString)
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .foregroundColor(pomodoroVM.phase == .work ? Color(hex: "#4A4A4A") : .blue)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(Color.white.opacity(0.85))
+                    .cornerRadius(6)
+                    .offset(y: timerOffset)
+                    .shadow(radius: 2)
+                    .animation(.spring(), value: timerOffset)
+            }
+            
             if let message = petVM.speechMessage {
                 SpeechBubbleView(text: message)
                     .offset(y: -80) // Position above the pet
                     // Add a gentle pop-in animation
                     .transition(AnyTransition.scale(scale: 0.8, anchor: .bottom).combined(with: .opacity))
                     .animation(.spring(response: 0.3, dampingFraction: 0.6), value: petVM.speechMessage)
-            } else {
-                // Only show timer if there's no speech bubble
-                if distractionMonitor.consecutiveDistractedSeconds > 0 {
-                    Text(String(format: "%02d:%02d", distractionMonitor.consecutiveDistractedSeconds / 60, distractionMonitor.consecutiveDistractedSeconds % 60))
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(Color.red.opacity(0.85))
-                        .cornerRadius(6)
-                        .offset(y: -75)
-                        .shadow(radius: 2)
-                } else if pomodoroVM.isRunning {
-                    Text(pomodoroVM.timePassedString)
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(pomodoroVM.phase == .work ? Color(hex: "#4A4A4A") : .blue)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(Color.white.opacity(0.85))
-                        .cornerRadius(6)
-                        .offset(y: -75)
-                        .shadow(radius: 2)
-                }
             }
             
             if coworkingVM.isCoworkerActive {
