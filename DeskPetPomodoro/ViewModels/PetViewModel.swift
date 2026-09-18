@@ -7,6 +7,7 @@ class PetViewModel: ObservableObject {
     @Published var isActive: Bool = false
     @Published var isSleeping: Bool = false
     @Published var speechMessage: String? = nil
+    @Published var facingRight: Bool = true
     
     private var frameTimer: Timer?
     private var sleepTimer: Timer?

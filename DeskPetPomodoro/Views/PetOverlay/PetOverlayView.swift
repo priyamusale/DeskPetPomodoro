@@ -20,7 +20,8 @@ struct PetOverlayView: View {
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: petVM.speechMessage)
                     Spacer()
                 }
-                .padding(.leading, 4)
+                // 38 = 34px (off-screen window offset) + 4px margin
+                .padding(.leading, 38)
             } else {
                 Spacer().frame(height: 4)
             }
@@ -62,7 +63,7 @@ struct PetOverlayView: View {
                 PetCanvasView(
                     variant: petPreferences.selectedVariant,
                     frameIndex: petVM.walkFrame,
-                    facingRight: true,
+                    facingRight: petVM.facingRight,
                     isSleeping: petVM.isSleeping
                 )
                 .frame(width: 72, height: 72)

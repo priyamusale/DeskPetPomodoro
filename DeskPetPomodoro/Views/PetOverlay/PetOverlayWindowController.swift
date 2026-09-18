@@ -5,23 +5,23 @@ import Combine
 class PetOverlayWindowController: NSWindowController {
     private var cancellables = Set<AnyCancellable>()
     private let pomodoroVM: PomodoroViewModel
+    private let petVM: PetViewModel
     
-    // Track if we're in a walk-to-close animation
     private var isWalkingToClose = false
     private var homeX: CGFloat = 0
+    private var homeY: CGFloat = 0
     
     init(petVM: PetViewModel, preferences: PetPreferencesStore, pomodoroVM: PomodoroViewModel, coworkingVM: CoworkingViewModel) {
         self.pomodoroVM = pomodoroVM
+        self.petVM = petVM
         let screen = NSScreen.main ?? NSScreen.screens[0]
         
         let startX = screen.frame.minX - 34
+        let startY = screen.frame.minY
         self.homeX = startX
+        self.homeY = startY
         
-        // Make the window 280px wide so speech bubble doesn't clip
-        let rect = NSRect(x: startX,
-                          y: screen.frame.minY,
-                          width: 280,
-                          height: 200)
+        let rect = NSRect(x: startX, y: startY, width: 280, height: 200)
         
         let window = NSWindow(contentRect: rect,
                               styleMask: .borderless,
@@ -44,20 +44,14 @@ class PetOverlayWindowController: NSWindowController {
         
         super.init(window: window)
         
-        // Observe Pomodoro progress to slide the pet across the screen
         pomodoroVM.$timeRemaining
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.updateWindowPosition()
-            }
+            .sink { [weak self] _ in self?.updateWindowPosition() }
             .store(in: &cancellables)
         
-        // Listen for the punishment event to trigger the walk-to-close animation
         NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(onWalkToClose),
-            name: NSNotification.Name("walkToCloseTab"),
-            object: nil
+            self, selector: #selector(onWalkToClose),
+            name: NSNotification.Name("walkToCloseTab"), object: nil
         )
     }
     
@@ -70,9 +64,11 @@ class PetOverlayWindowController: NSWindowController {
         let maxX: CGFloat = screen.frame.maxX - 140 + 34
         
         homeX = minX + (maxX - minX) * CGFloat(progress)
+        homeY = screen.frame.minY
         
         var newFrame = window.frame
         newFrame.origin.x = homeX
+        newFrame.origin.y = homeY
         window.setFrame(newFrame, display: true, animate: false)
     }
     
@@ -82,38 +78,86 @@ class PetOverlayWindowController: NSWindowController {
         
         isWalkingToClose = true
         let savedHomeX = homeX
+        let savedHomeY = homeY
         
-        // Chrome's tab bar is near the top of the screen. 
-        // We walk to the x-position of the active Chrome window's tab bar area.
-        // Approximate target: center-top of the screen (where the tab is likely to be)
-        let targetX = screen.frame.midX - 70
-        let targetY = screen.frame.maxY - 80 // near the top (tab bar area)
+        // Determine which side of the screen the pet is on
+        let screenMidX = screen.frame.midX
+        let petIsOnLeft = (homeX + 70) < screenMidX   // pet center vs screen center
         
-        // Step 1: Walk to the tab (animate over 1.5 seconds)
-        NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 1.5
-            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        // Chrome tab bar is ~40px from top of screen
+        // If on left: walk up along left edge, then right to center of tabs
+        // If on right: walk up along right edge, then left to center of tabs
+        let tabBarY = screen.frame.maxY - 200          // near the tab bar
+        let tabBarX: CGFloat = petIsOnLeft
+            ? screen.frame.midX - 200                  // tabs are roughly center-right area
+            : screen.frame.midX - 200                  // same target regardless
+
+        // STEP 1: Face upward direction, walk STRAIGHT UP along same X edge
+        DispatchQueue.main.async {
+            self.petVM.facingRight = petIsOnLeft ? true : false
+        }
+        
+        NSAnimationContext.runAnimationGroup({ ctx in
+            ctx.duration = 1.2
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeIn)
             window.animator().setFrame(
-                NSRect(x: targetX, y: targetY, width: window.frame.width, height: window.frame.height),
+                NSRect(x: homeX, y: tabBarY, width: window.frame.width, height: window.frame.height),
                 display: true
             )
-        }) {
-            // Step 2: Close the tab once we arrive
-            NotificationCenter.default.post(name: NSNotification.Name("executePunishment"), object: nil)
+        }) { [weak self] in
+            guard let self = self else { return }
             
-            // Step 3: Walk back home after a short pause
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                guard let self = self, let window = self.window else { return }
-                NSAnimationContext.runAnimationGroup({ context in
-                    context.duration = 1.5
-                    context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                    let homeY = screen.frame.minY
-                    window.animator().setFrame(
-                        NSRect(x: savedHomeX, y: homeY, width: window.frame.width, height: window.frame.height),
-                        display: true
-                    )
-                }) {
-                    self.isWalkingToClose = false
+            // STEP 2: Walk HORIZONTALLY to the tab position (facing the direction of travel)
+            let movingRight = tabBarX > self.homeX
+            DispatchQueue.main.async {
+                self.petVM.facingRight = movingRight
+            }
+            
+            NSAnimationContext.runAnimationGroup({ ctx in
+                ctx.duration = 1.0
+                ctx.timingFunction = CAMediaTimingFunction(name: .linear)
+                window.animator().setFrame(
+                    NSRect(x: tabBarX, y: tabBarY, width: window.frame.width, height: window.frame.height),
+                    display: true
+                )
+            }) { [weak self] in
+                guard let self = self else { return }
+                
+                // STEP 3: Close the tab
+                NotificationCenter.default.post(name: NSNotification.Name("executePunishment"), object: nil)
+                
+                // STEP 4: Walk back DOWN along the edge (straight down to home Y)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    // First go back to home X
+                    let facingHomeDir = savedHomeX > tabBarX
+                    DispatchQueue.main.async {
+                        self.petVM.facingRight = facingHomeDir
+                    }
+                    
+                    NSAnimationContext.runAnimationGroup({ ctx in
+                        ctx.duration = 1.0
+                        ctx.timingFunction = CAMediaTimingFunction(name: .linear)
+                        window.animator().setFrame(
+                            NSRect(x: savedHomeX, y: tabBarY, width: window.frame.width, height: window.frame.height),
+                            display: true
+                        )
+                    }) {
+                        // Then walk straight down
+                        DispatchQueue.main.async {
+                            self.petVM.facingRight = petIsOnLeft ? true : false
+                        }
+                        NSAnimationContext.runAnimationGroup({ ctx in
+                            ctx.duration = 1.2
+                            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                            window.animator().setFrame(
+                                NSRect(x: savedHomeX, y: savedHomeY, width: window.frame.width, height: window.frame.height),
+                                display: true
+                            )
+                        }) {
+                            self.petVM.facingRight = true
+                            self.isWalkingToClose = false
+                        }
+                    }
                 }
             }
         }
@@ -123,4 +167,5 @@ class PetOverlayWindowController: NSWindowController {
         fatalError("init(coder:) has not been implemented")
     }
 }
+
 
