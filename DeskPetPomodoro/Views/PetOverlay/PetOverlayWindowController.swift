@@ -114,8 +114,9 @@ class PetOverlayWindowController: NSWindowController {
         let screenMidX = screen.frame.midX
         let petIsOnLeft = (homeX + 70) < screenMidX
         
-        let tabBarY = screen.frame.maxY - 80
-        let tabBarX: CGFloat = screen.frame.midX - 200
+        // Target: near Chrome's tab bar at top of screen
+        let tabBarY = screen.frame.maxY - 40
+        let tabBarX: CGFloat = screen.frame.midX - 350
         
         let startX = homeX
         let startY = homeY
