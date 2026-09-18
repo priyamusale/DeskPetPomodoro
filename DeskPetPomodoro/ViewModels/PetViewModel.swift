@@ -140,7 +140,7 @@ class PetViewModel: ObservableObject {
     @objc private func onShowDistractionWarning() {
         DispatchQueue.main.async {
             self.isSleeping = false
-            self.showSpeech("You've been on a distracting site for a while! Get back to work!")
+            self.showSpeech("Get back to work!")
         }
     }
     
