@@ -116,11 +116,13 @@ class SpriteCache {
         // Find the maximum chunk height to unify frame sizes
         let maxChunkH = globalChunks.map { $0.maxY - $0.minY + 1 }.max() ?? (height / rows)
         
+        let useChunks = (globalChunks.count == rows)
+        
         for i in frameIndices {
             let col = i % columns
             let row = (i / columns) % rows
             
-            if row < globalChunks.count {
+            if useChunks {
                 let chunk = globalChunks[row]
                 let chunkH = chunk.maxY - chunk.minY + 1
                 
