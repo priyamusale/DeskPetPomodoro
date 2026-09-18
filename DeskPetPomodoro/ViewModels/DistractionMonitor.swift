@@ -118,18 +118,29 @@ class DistractionMonitor: ObservableObject {
                 }
             }
             
-            if consecutiveDistractedSeconds >= punishmentThresholdSeconds {
+            if consecutiveDistractedSeconds == punishmentThresholdSeconds {
                 print("Tough Love -> Punishing! (15 min)")
                 punishAndCloseTab()
-            } else if consecutiveDistractedSeconds >= warning2ThresholdSeconds && !hasWarned2 {
-                print("Tough Love -> Second warning! (10 min)")
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: NSNotification.Name("walkBackHome"), object: nil)
+                }
+            } else if consecutiveDistractedSeconds == warning2ThresholdSeconds && !hasWarned2 {
+                print("Tough Love -> Second warning & start walk! (10 min)")
                 hasWarned2 = true
                 warnUser(message: "Still here? Focus up!")
-            } else if consecutiveDistractedSeconds >= warningThresholdSeconds && !hasWarned {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: NSNotification.Name("walkToCloseTab"), object: nil)
+                }
+            } else if consecutiveDistractedSeconds == warningThresholdSeconds && !hasWarned {
                 print("Tough Love -> Warning! (5 min)")
                 warnUser(message: nil)
             }
         } else {
+            if consecutiveDistractedSeconds >= warning2ThresholdSeconds {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: NSNotification.Name("cancelWalkAndGoHome"), object: nil)
+                }
+            }
             resetCounter()
         }
     }

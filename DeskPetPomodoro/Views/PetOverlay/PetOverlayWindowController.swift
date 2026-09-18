@@ -10,6 +10,7 @@ class PetOverlayWindowController: NSWindowController {
     private var isWalkingToClose = false
     private var homeX: CGFloat = 0
     private var homeY: CGFloat = 0
+    private var walkTimer: Timer?
     
     init(petVM: PetViewModel, preferences: PetPreferencesStore, pomodoroVM: PomodoroViewModel, coworkingVM: CoworkingViewModel) {
         self.pomodoroVM = pomodoroVM
@@ -57,6 +58,14 @@ class PetOverlayWindowController: NSWindowController {
             self, selector: #selector(onSnapToLeftEdge),
             name: NSNotification.Name("snapToLeftEdge"), object: nil
         )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(onCancelWalkAndGoHome),
+            name: NSNotification.Name("cancelWalkAndGoHome"), object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(onWalkBackHome),
+            name: NSNotification.Name("walkBackHome"), object: nil
+        )
     }
     
     private func updateWindowPosition() {
@@ -99,94 +108,92 @@ class PetOverlayWindowController: NSWindowController {
         guard let window = self.window, let screen = NSScreen.main ?? NSScreen.screens.first else { return }
         guard !isWalkingToClose else { return }
         
+        walkTimer?.invalidate()
         isWalkingToClose = true
-        let savedHomeX = homeX
-        let savedHomeY = homeY
         
         let screenMidX = screen.frame.midX
         let petIsOnLeft = (homeX + 70) < screenMidX
         
-        // Target: near Chrome's tab bar at top of screen
-        let tabBarY = screen.frame.maxY - 80 // changed from -200 to -80 so pet goes all the way up to tabs
+        let tabBarY = screen.frame.maxY - 80
         let tabBarX: CGFloat = screen.frame.midX - 200
         
-        // STEP 1: Rotate sprite -90° (head up = walking up), walk straight UP (~45s)
+        let startX = homeX
+        let startY = homeY
+        
+        let totalDuration: TimeInterval = 300 // 5 minutes
+        let timeUp: TimeInterval = 200        // 3m 20s walking up
+        let timeAcross: TimeInterval = 100    // 1m 40s walking horizontally
+        
+        let startTime = Date()
+        
+        // Initial rotation
         DispatchQueue.main.async {
             self.petVM.facingRight = petIsOnLeft
-            self.petVM.walkRotation = petIsOnLeft ? -90 : 90  // -90 = head up facing left-screen, 90 = head up facing right-screen
+            self.petVM.walkRotation = petIsOnLeft ? -90 : 90
+            self.petVM.startWalking()
+        }
+        
+        walkTimer = Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { [weak self] t in
+            guard let self = self, let win = self.window else { t.invalidate(); return }
+            let elapsed = Date().timeIntervalSince(startTime)
+            
+            if elapsed >= totalDuration {
+                t.invalidate()
+                win.setFrameOrigin(NSPoint(x: tabBarX, y: tabBarY))
+                // DistractionMonitor will handle closing the tab when its timer reaches 15 mins.
+                // We just stop the creep.
+                return
+            }
+            
+            if elapsed < timeUp {
+                let p = elapsed / timeUp
+                let currentY = startY + (tabBarY - startY) * CGFloat(p)
+                win.setFrameOrigin(NSPoint(x: startX, y: currentY))
+            } else {
+                if self.petVM.walkRotation != 0 {
+                    self.petVM.walkRotation = 0
+                    self.petVM.facingRight = tabBarX > startX
+                }
+                
+                let p = (elapsed - timeUp) / timeAcross
+                let currentX = startX + (tabBarX - startX) * CGFloat(p)
+                win.setFrameOrigin(NSPoint(x: currentX, y: tabBarY))
+            }
+        }
+    }
+    
+    @objc private func onCancelWalkAndGoHome() {
+        guard isWalkingToClose else { return }
+        walkTimer?.invalidate()
+        animateHomeQuickly(duration: 1.5)
+    }
+    
+    @objc private func onWalkBackHome() {
+        walkTimer?.invalidate()
+        animateHomeQuickly(duration: 3.0)
+    }
+    
+    private func animateHomeQuickly(duration: TimeInterval) {
+        guard let window = self.window else { return }
+        
+        // If we are currently rotated, reset rotation immediately for the walk back
+        DispatchQueue.main.async {
+            self.petVM.walkRotation = 0
+            self.petVM.facingRight = self.homeX > window.frame.origin.x
         }
         
         NSAnimationContext.runAnimationGroup({ ctx in
-            ctx.duration = 45
-            ctx.timingFunction = CAMediaTimingFunction(name: .linear)
-            window.animator().setFrame(
-                NSRect(x: homeX, y: tabBarY, width: window.frame.width, height: window.frame.height),
-                display: true
-            )
+            ctx.duration = duration
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            window.animator().setFrameOrigin(NSPoint(x: homeX, y: homeY))
         }) { [weak self] in
             guard let self = self else { return }
-            
-            // STEP 2: Rotate back to 0°, walk HORIZONTALLY to tab (~20s)
-            let movingRight = tabBarX > self.homeX
             DispatchQueue.main.async {
+                self.isWalkingToClose = false
                 self.petVM.walkRotation = 0
-                self.petVM.facingRight = movingRight
-            }
-            
-            NSAnimationContext.runAnimationGroup({ ctx in
-                ctx.duration = 20
-                ctx.timingFunction = CAMediaTimingFunction(name: .linear)
-                window.animator().setFrame(
-                    NSRect(x: tabBarX, y: tabBarY, width: window.frame.width, height: window.frame.height),
-                    display: true
-                )
-            }) { [weak self] in
-                guard let self = self else { return }
-                
-                // STEP 3: Close the tab
-                NotificationCenter.default.post(name: NSNotification.Name("executePunishment"), object: nil)
-                
-                // STEP 4: Walk back home — horizontal first (~20s), then down (~45s)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    let goingBack = savedHomeX > tabBarX
-                    DispatchQueue.main.async {
-                        self.petVM.walkRotation = 0
-                        self.petVM.facingRight = goingBack
-                    }
-                    
-                    NSAnimationContext.runAnimationGroup({ ctx in
-                        ctx.duration = 20
-                        ctx.timingFunction = CAMediaTimingFunction(name: .linear)
-                        window.animator().setFrame(
-                            NSRect(x: savedHomeX, y: tabBarY, width: window.frame.width, height: window.frame.height),
-                            display: true
-                        )
-                    }) {
-                        // Walk straight DOWN
-                        DispatchQueue.main.async {
-                            // Rotate 90° to face downward direction
-                            self.petVM.walkRotation = petIsOnLeft ? 90 : -90
-                            self.petVM.facingRight = petIsOnLeft
-                        }
-                        NSAnimationContext.runAnimationGroup({ ctx in
-                            ctx.duration = 45
-                            ctx.timingFunction = CAMediaTimingFunction(name: .linear)
-                            window.animator().setFrame(
-                                NSRect(x: savedHomeX, y: savedHomeY, width: window.frame.width, height: window.frame.height),
-                                display: true
-                            )
-                        }) {
-                            // Reset
-                            DispatchQueue.main.async {
-                                self.petVM.walkRotation = 0
-                                self.petVM.facingRight = true
-                                if !self.pomodoroVM.isRunning {
-                                    self.petVM.stopWalking()
-                                }
-                            }
-                            self.isWalkingToClose = false
-                        }
-                    }
+                self.petVM.facingRight = true
+                if !self.pomodoroVM.isRunning {
+                    self.petVM.stopWalking()
                 }
             }
         }
