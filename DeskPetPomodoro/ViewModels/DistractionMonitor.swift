@@ -19,10 +19,13 @@ class DistractionMonitor: ObservableObject {
     
     private let blacklistedDomains = ["youtube.com", "instagram.com", "tiktok.com", "facebook.com"]
     
-    let warningThresholdSeconds = 10
-    let punishmentThresholdSeconds = 20
+    // 5 min warning, 10 min second warning, 15 min close
+    let warningThresholdSeconds  = 300   // 5 minutes
+    let warning2ThresholdSeconds = 600   // 10 minutes
+    let punishmentThresholdSeconds = 900 // 15 minutes
     
     private var hasWarned = false
+    private var hasWarned2 = false
     
     private init() {
         startMonitoring()
@@ -39,7 +42,7 @@ class DistractionMonitor: ObservableObject {
         consecutiveDistractedSeconds = 0
         hasWarned = false
         
-        timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
             self?.checkActiveTab()
         }
     }
@@ -105,14 +108,18 @@ class DistractionMonitor: ObservableObject {
         print("Tough Love Check -> isDistracted: \(isDistracted) | Consecutive: \(consecutiveDistractedSeconds)")
         
         if isDistracted {
-            consecutiveDistractedSeconds += 5
+            consecutiveDistractedSeconds += 30
             
             if consecutiveDistractedSeconds >= punishmentThresholdSeconds {
-                print("Tough Love -> Punishing!")
+                print("Tough Love -> Punishing! (15 min)")
                 punishAndCloseTab()
+            } else if consecutiveDistractedSeconds >= warning2ThresholdSeconds && !hasWarned2 {
+                print("Tough Love -> Second warning! (10 min)")
+                hasWarned2 = true
+                warnUser(message: "Still here? Focus up!")
             } else if consecutiveDistractedSeconds >= warningThresholdSeconds && !hasWarned {
-                print("Tough Love -> Warning!")
-                warnUser()
+                print("Tough Love -> Warning! (5 min)")
+                warnUser(message: nil) // uses default "Get back to work!"
             }
         } else {
             resetCounter()
@@ -122,12 +129,17 @@ class DistractionMonitor: ObservableObject {
     private func resetCounter() {
         consecutiveDistractedSeconds = 0
         hasWarned = false
+        hasWarned2 = false
     }
     
-    private func warnUser() {
-        hasWarned = true
+    private func warnUser(message: String?) {
+        if !hasWarned { hasWarned = true }
+        let msg = message ?? "Get back to work!"
         DispatchQueue.main.async {
-            NotificationCenter.default.post(name: NSNotification.Name("showDistractionWarning"), object: nil)
+            NotificationCenter.default.post(
+                name: NSNotification.Name("showDistractionWarning"),
+                object: msg
+            )
         }
     }
     

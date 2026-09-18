@@ -80,26 +80,22 @@ class PetOverlayWindowController: NSWindowController {
         let savedHomeX = homeX
         let savedHomeY = homeY
         
-        // Determine which side of the screen the pet is on
         let screenMidX = screen.frame.midX
-        let petIsOnLeft = (homeX + 70) < screenMidX   // pet center vs screen center
+        let petIsOnLeft = (homeX + 70) < screenMidX
         
-        // Chrome tab bar is ~40px from top of screen
-        // If on left: walk up along left edge, then right to center of tabs
-        // If on right: walk up along right edge, then left to center of tabs
-        let tabBarY = screen.frame.maxY - 200          // near the tab bar
-        let tabBarX: CGFloat = petIsOnLeft
-            ? screen.frame.midX - 200                  // tabs are roughly center-right area
-            : screen.frame.midX - 200                  // same target regardless
-
-        // STEP 1: Face upward direction, walk STRAIGHT UP along same X edge
+        // Target: near Chrome's tab bar at top of screen
+        let tabBarY = screen.frame.maxY - 200
+        let tabBarX: CGFloat = screen.frame.midX - 200
+        
+        // STEP 1: Rotate sprite -90° (head up = walking up), walk straight UP (~45s)
         DispatchQueue.main.async {
-            self.petVM.facingRight = petIsOnLeft ? true : false
+            self.petVM.facingRight = petIsOnLeft
+            self.petVM.walkRotation = petIsOnLeft ? -90 : 90  // -90 = head up facing left-screen, 90 = head up facing right-screen
         }
         
         NSAnimationContext.runAnimationGroup({ ctx in
-            ctx.duration = 1.2
-            ctx.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            ctx.duration = 45
+            ctx.timingFunction = CAMediaTimingFunction(name: .linear)
             window.animator().setFrame(
                 NSRect(x: homeX, y: tabBarY, width: window.frame.width, height: window.frame.height),
                 display: true
@@ -107,14 +103,15 @@ class PetOverlayWindowController: NSWindowController {
         }) { [weak self] in
             guard let self = self else { return }
             
-            // STEP 2: Walk HORIZONTALLY to the tab position (facing the direction of travel)
+            // STEP 2: Rotate back to 0°, walk HORIZONTALLY to tab (~20s)
             let movingRight = tabBarX > self.homeX
             DispatchQueue.main.async {
+                self.petVM.walkRotation = 0
                 self.petVM.facingRight = movingRight
             }
             
             NSAnimationContext.runAnimationGroup({ ctx in
-                ctx.duration = 1.0
+                ctx.duration = 20
                 ctx.timingFunction = CAMediaTimingFunction(name: .linear)
                 window.animator().setFrame(
                     NSRect(x: tabBarX, y: tabBarY, width: window.frame.width, height: window.frame.height),
@@ -126,35 +123,41 @@ class PetOverlayWindowController: NSWindowController {
                 // STEP 3: Close the tab
                 NotificationCenter.default.post(name: NSNotification.Name("executePunishment"), object: nil)
                 
-                // STEP 4: Walk back DOWN along the edge (straight down to home Y)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                    // First go back to home X
-                    let facingHomeDir = savedHomeX > tabBarX
+                // STEP 4: Walk back home — horizontal first (~20s), then down (~45s)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    let goingBack = savedHomeX > tabBarX
                     DispatchQueue.main.async {
-                        self.petVM.facingRight = facingHomeDir
+                        self.petVM.walkRotation = 0
+                        self.petVM.facingRight = goingBack
                     }
                     
                     NSAnimationContext.runAnimationGroup({ ctx in
-                        ctx.duration = 1.0
+                        ctx.duration = 20
                         ctx.timingFunction = CAMediaTimingFunction(name: .linear)
                         window.animator().setFrame(
                             NSRect(x: savedHomeX, y: tabBarY, width: window.frame.width, height: window.frame.height),
                             display: true
                         )
                     }) {
-                        // Then walk straight down
+                        // Walk straight DOWN
                         DispatchQueue.main.async {
-                            self.petVM.facingRight = petIsOnLeft ? true : false
+                            // Rotate 90° to face downward direction
+                            self.petVM.walkRotation = petIsOnLeft ? 90 : -90
+                            self.petVM.facingRight = petIsOnLeft
                         }
                         NSAnimationContext.runAnimationGroup({ ctx in
-                            ctx.duration = 1.2
-                            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                            ctx.duration = 45
+                            ctx.timingFunction = CAMediaTimingFunction(name: .linear)
                             window.animator().setFrame(
                                 NSRect(x: savedHomeX, y: savedHomeY, width: window.frame.width, height: window.frame.height),
                                 display: true
                             )
                         }) {
-                            self.petVM.facingRight = true
+                            // Reset
+                            DispatchQueue.main.async {
+                                self.petVM.walkRotation = 0
+                                self.petVM.facingRight = true
+                            }
                             self.isWalkingToClose = false
                         }
                     }

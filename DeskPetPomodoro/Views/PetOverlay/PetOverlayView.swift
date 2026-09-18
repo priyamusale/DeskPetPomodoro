@@ -29,8 +29,11 @@ struct PetOverlayView: View {
             // Timer badges
             let showDistractionTimer = distractionMonitor.consecutiveDistractedSeconds > 0
             if showDistractionTimer {
+                let mins = distractionMonitor.consecutiveDistractedSeconds / 60
+                let secs = distractionMonitor.consecutiveDistractedSeconds % 60
+                let timerText = mins > 0 ? "\(mins)m \(String(format: "%02d", secs))s" : "\(secs)s"
                 HStack {
-                    Text(String(format: "%02d:%02d", distractionMonitor.consecutiveDistractedSeconds / 60, distractionMonitor.consecutiveDistractedSeconds % 60))
+                    Text(timerText)
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
                         .foregroundColor(.white)
                         .padding(.horizontal, 6)
@@ -40,7 +43,7 @@ struct PetOverlayView: View {
                         .shadow(radius: 2)
                     Spacer()
                 }
-                .padding(.leading, 30)
+                .padding(.leading, 38)
             } else if pomodoroVM.isRunning {
                 HStack {
                     Text(pomodoroVM.timePassedString)
@@ -53,7 +56,7 @@ struct PetOverlayView: View {
                         .shadow(radius: 2)
                     Spacer()
                 }
-                .padding(.leading, 30)
+                .padding(.leading, 38)
             }
             
             // Pet canvas — fixed 140×140
@@ -67,6 +70,8 @@ struct PetOverlayView: View {
                     isSleeping: petVM.isSleeping
                 )
                 .frame(width: 72, height: 72)
+                .rotationEffect(.degrees(petVM.walkRotation))
+                .animation(.easeInOut(duration: 0.3), value: petVM.walkRotation)
                 .scaleEffect(pulseScale)
                 .onChange(of: petVM.showTreat) { newValue in
                     if newValue {

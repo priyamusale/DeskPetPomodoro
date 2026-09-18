@@ -8,6 +8,7 @@ class PetViewModel: ObservableObject {
     @Published var isSleeping: Bool = false
     @Published var speechMessage: String? = nil
     @Published var facingRight: Bool = true
+    @Published var walkRotation: Double = 0  // 0=normal, -90=walking up, 90=walking down
     
     private var frameTimer: Timer?
     private var sleepTimer: Timer?
@@ -138,10 +139,11 @@ class PetViewModel: ObservableObject {
         }
     }
     
-    @objc private func onShowDistractionWarning() {
+    @objc private func onShowDistractionWarning(_ note: Notification) {
+        let msg = note.object as? String ?? "Get back to work!"
         DispatchQueue.main.async {
             self.isSleeping = false
-            self.showSpeech("Get back to work!")
+            self.showSpeech(msg)
         }
     }
     
