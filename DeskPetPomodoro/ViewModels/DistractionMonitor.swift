@@ -87,22 +87,22 @@ class DistractionMonitor: ObservableObject {
                 if let error = error {
                     print("AppleScript Error: \(error)")
                 }
-                resetCounter()
+                handleResult("")
             }
         } else {
-            resetCounter()
+            handleResult("")
         }
     }
     
     private func handleResult(_ resultString: String) {
+        let isDistracted: Bool
         if resultString.isEmpty {
-            resetCounter()
-            return
-        }
-        
-        let isDistracted = blacklistedDomains.contains { domain in
-            let keyword = domain.replacingOccurrences(of: ".com", with: "")
-            return resultString.lowercased().contains(domain.lowercased()) || resultString.lowercased().contains(keyword.lowercased())
+            isDistracted = false
+        } else {
+            isDistracted = blacklistedDomains.contains { domain in
+                let keyword = domain.replacingOccurrences(of: ".com", with: "")
+                return resultString.lowercased().contains(domain.lowercased()) || resultString.lowercased().contains(keyword.lowercased())
+            }
         }
         
         print("Tough Love Check -> isDistracted: \(isDistracted) | Consecutive: \(consecutiveDistractedSeconds)")
@@ -146,9 +146,11 @@ class DistractionMonitor: ObservableObject {
     }
     
     private func resetCounter() {
-        consecutiveDistractedSeconds = 0
-        hasWarned = false
-        hasWarned2 = false
+        DispatchQueue.main.async {
+            self.consecutiveDistractedSeconds = 0
+            self.hasWarned = false
+            self.hasWarned2 = false
+        }
     }
     
     private func warnUser(message: String?) {
