@@ -53,10 +53,16 @@ class PetOverlayWindowController: NSWindowController {
             self, selector: #selector(onWalkToClose),
             name: NSNotification.Name("walkToCloseTab"), object: nil
         )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(onSnapToLeftEdge),
+            name: NSNotification.Name("snapToLeftEdge"), object: nil
+        )
     }
     
     private func updateWindowPosition() {
+        // Don't move while walking or while distracted
         guard !isWalkingToClose else { return }
+        guard DistractionMonitor.shared.consecutiveDistractedSeconds == 0 else { return }
         guard let window = self.window, let screen = NSScreen.main ?? NSScreen.screens.first else { return }
         
         let progress = pomodoroVM.progress
@@ -70,6 +76,23 @@ class PetOverlayWindowController: NSWindowController {
         newFrame.origin.x = homeX
         newFrame.origin.y = homeY
         window.setFrame(newFrame, display: true, animate: false)
+    }
+    
+    @objc private func onSnapToLeftEdge() {
+        guard let window = self.window, let screen = NSScreen.main ?? NSScreen.screens.first else { return }
+        guard !isWalkingToClose else { return }
+        // Snap smoothly to left edge
+        let leftEdgeX = screen.frame.minX - 34
+        homeX = leftEdgeX
+        homeY = screen.frame.minY
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.4
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            window.animator().setFrame(
+                NSRect(x: leftEdgeX, y: homeY, width: window.frame.width, height: window.frame.height),
+                display: true
+            )
+        }
     }
     
     @objc private func onWalkToClose() {

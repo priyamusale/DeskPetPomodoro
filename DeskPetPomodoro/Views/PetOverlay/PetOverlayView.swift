@@ -11,7 +11,7 @@ struct PetOverlayView: View {
     @State private var pulseScale: CGFloat = 1.0
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             // Speech bubble lives here — ABOVE the pet, in unconstrained space
             if let message = petVM.speechMessage {
                 HStack {

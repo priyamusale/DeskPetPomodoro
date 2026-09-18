@@ -108,7 +108,15 @@ class DistractionMonitor: ObservableObject {
         print("Tough Love Check -> isDistracted: \(isDistracted) | Consecutive: \(consecutiveDistractedSeconds)")
         
         if isDistracted {
+            let wasClean = consecutiveDistractedSeconds == 0
             consecutiveDistractedSeconds += 30
+            
+            // First detection: snap pet to left edge before starting the count
+            if wasClean {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: NSNotification.Name("snapToLeftEdge"), object: nil)
+                }
+            }
             
             if consecutiveDistractedSeconds >= punishmentThresholdSeconds {
                 print("Tough Love -> Punishing! (15 min)")
@@ -119,7 +127,7 @@ class DistractionMonitor: ObservableObject {
                 warnUser(message: "Still here? Focus up!")
             } else if consecutiveDistractedSeconds >= warningThresholdSeconds && !hasWarned {
                 print("Tough Love -> Warning! (5 min)")
-                warnUser(message: nil) // uses default "Get back to work!"
+                warnUser(message: nil)
             }
         } else {
             resetCounter()
