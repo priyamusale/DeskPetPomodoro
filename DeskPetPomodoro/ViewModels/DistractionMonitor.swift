@@ -4,7 +4,7 @@ import Cocoa
 class DistractionMonitor: ObservableObject {
     static let shared = DistractionMonitor()
     
-    @Published var isEnabled: Bool = false {
+    @Published var isEnabled: Bool = true {
         didSet {
             if isEnabled {
                 startMonitoring()
@@ -27,7 +27,9 @@ class DistractionMonitor: ObservableObject {
     
     private var hasWarned = false
     
-    private init() {}
+    private init() {
+        startMonitoring()
+    }
     
     func startMonitoring() {
         stopMonitoring()
@@ -49,21 +51,23 @@ class DistractionMonitor: ObservableObject {
         if application "Google Chrome" is running then
             tell application "Google Chrome"
                 if (count of windows) > 0 then
-                    return URL of active tab of front window
+                    set tabURL to URL of active tab of front window
+                    set winTitle to name of front window
+                    return tabURL & "|" & winTitle
                 else
-                    return ""
+                    return "|"
                 end if
             end tell
         else
-            return ""
+            return "|"
         end if
         """
         
         var error: NSDictionary?
         if let script = NSAppleScript(source: scriptSource) {
             let result = script.executeAndReturnError(&error)
-            if let urlString = result.stringValue {
-                handleURL(urlString)
+            if let resultString = result.stringValue {
+                handleResult(resultString)
             } else {
                 if let error = error {
                     print("AppleScript Error: \(error)")
@@ -75,15 +79,17 @@ class DistractionMonitor: ObservableObject {
         }
     }
     
-    private func handleURL(_ urlString: String) {
-        if urlString.isEmpty {
+    private func handleResult(_ resultString: String) {
+        if resultString == "|" || resultString.isEmpty {
             resetCounter()
             return
         }
         
-        let isDistracted = blacklistedDomains.contains { urlString.lowercased().contains($0) }
+        let isDistracted = blacklistedDomains.contains { domain in
+            resultString.lowercased().contains(domain.lowercased()) || resultString.lowercased().contains(domain.replacingOccurrences(of: ".com", with: ""))
+        }
         
-        print("Tough Love Check -> URL: \(urlString) | isDistracted: \(isDistracted) | Consecutive: \(consecutiveDistractedSeconds)")
+        print("Tough Love Check -> \(resultString) | isDistracted: \(isDistracted) | Consecutive: \(consecutiveDistractedSeconds)")
         
         if isDistracted {
             consecutiveDistractedSeconds += 5
