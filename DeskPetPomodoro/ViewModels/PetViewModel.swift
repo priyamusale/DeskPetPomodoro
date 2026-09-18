@@ -151,6 +151,8 @@ class PetViewModel: ObservableObject {
         DispatchQueue.main.async {
             self.isSleeping = false
             self.showSpeech("I warned you! I closed that tab!")
+            self.startFrameTimer()
+            self.isActive = true
         }
     }
 }

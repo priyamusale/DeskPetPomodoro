@@ -107,7 +107,7 @@ class PetOverlayWindowController: NSWindowController {
         let petIsOnLeft = (homeX + 70) < screenMidX
         
         // Target: near Chrome's tab bar at top of screen
-        let tabBarY = screen.frame.maxY - 200
+        let tabBarY = screen.frame.maxY - 80 // changed from -200 to -80 so pet goes all the way up to tabs
         let tabBarX: CGFloat = screen.frame.midX - 200
         
         // STEP 1: Rotate sprite -90° (head up = walking up), walk straight UP (~45s)
@@ -180,6 +180,9 @@ class PetOverlayWindowController: NSWindowController {
                             DispatchQueue.main.async {
                                 self.petVM.walkRotation = 0
                                 self.petVM.facingRight = true
+                                if !self.pomodoroVM.isRunning {
+                                    self.petVM.stopWalking()
+                                }
                             }
                             self.isWalkingToClose = false
                         }
