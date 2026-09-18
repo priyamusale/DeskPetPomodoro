@@ -19,9 +19,6 @@ class DistractionMonitor: ObservableObject {
     
     private let blacklistedDomains = ["youtube.com", "instagram.com", "tiktok.com", "facebook.com"]
     
-    // Configurable thresholds for testing
-    // Currently set to 10 seconds for warning, 20 seconds for closing the tab.
-    // Change to 10 * 60 (600) and 15 * 60 (900) for real usage.
     let warningThresholdSeconds = 10
     let punishmentThresholdSeconds = 20
     
@@ -50,16 +47,17 @@ class DistractionMonitor: ObservableObject {
         let scriptSource = """
         if application "Google Chrome" is running then
             tell application "Google Chrome"
-                if (count of windows) > 0 then
-                    set tabURL to URL of active tab of front window
-                    set winTitle to name of front window
-                    return tabURL & "|" & winTitle
-                else
-                    return "|"
-                end if
+                set allText to ""
+                repeat with w in windows
+                    set allText to allText & (name of w) & "|||"
+                    repeat with t in tabs of w
+                        set allText to allText & (URL of t) & "|||"
+                    end repeat
+                end repeat
+                return allText
             end tell
         else
-            return "|"
+            return ""
         end if
         """
         
@@ -80,16 +78,17 @@ class DistractionMonitor: ObservableObject {
     }
     
     private func handleResult(_ resultString: String) {
-        if resultString == "|" || resultString.isEmpty {
+        if resultString.isEmpty {
             resetCounter()
             return
         }
         
         let isDistracted = blacklistedDomains.contains { domain in
-            resultString.lowercased().contains(domain.lowercased()) || resultString.lowercased().contains(domain.replacingOccurrences(of: ".com", with: ""))
+            let keyword = domain.replacingOccurrences(of: ".com", with: "")
+            return resultString.lowercased().contains(domain.lowercased()) || resultString.lowercased().contains(keyword.lowercased())
         }
         
-        print("Tough Love Check -> \(resultString) | isDistracted: \(isDistracted) | Consecutive: \(consecutiveDistractedSeconds)")
+        print("Tough Love Check -> isDistracted: \(isDistracted) | Consecutive: \(consecutiveDistractedSeconds)")
         
         if isDistracted {
             consecutiveDistractedSeconds += 5
@@ -119,10 +118,25 @@ class DistractionMonitor: ObservableObject {
     }
     
     private func punishAndCloseTab() {
+        let condition = blacklistedDomains.map { domain in
+            let keyword = domain.replacingOccurrences(of: ".com", with: "")
+            return "tURL contains \"\\(domain)\" or tURL contains \"\\(keyword)\" or tTitle contains \"\\(domain)\" or tTitle contains \"\\(keyword)\""
+        }.joined(separator: " or ")
+        
         let scriptSource = """
-        tell application "Google Chrome"
-            close active tab of front window
-        end tell
+        if application "Google Chrome" is running then
+            tell application "Google Chrome"
+                repeat with w in windows
+                    repeat with t in tabs of w
+                        set tURL to URL of t
+                        set tTitle to title of t
+                        if \(condition) then
+                            close t
+                        end if
+                    end repeat
+                end repeat
+            end tell
+        end if
         """
         
         var error: NSDictionary?
