@@ -26,6 +26,12 @@ class DistractionMonitor: ObservableObject {
     
     private init() {
         startMonitoring()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(executeClose),
+            name: NSNotification.Name("executePunishment"),
+            object: nil
+        )
     }
     
     func startMonitoring() {
@@ -126,14 +132,19 @@ class DistractionMonitor: ObservableObject {
     }
     
     private func punishAndCloseTab() {
-        // Build the domain list as a quoted AppleScript list
+        resetCounter()
+        // Trigger the walk animation; the actual tab close fires via executePunishment
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: NSNotification.Name("walkToCloseTab"), object: nil)
+        }
+    }
+    
+    @objc private func executeClose() {
         let domainChecks = blacklistedDomains.map { domain in
             let keyword = domain.replacingOccurrences(of: ".com", with: "")
             return "tURL contains \"\(domain)\" or tURL contains \"\(keyword)\""
         }.joined(separator: " or ")
         
-        // Collect (windowIndex, tabIndex) pairs first, then close in reverse
-        // to avoid index shifting while iterating
         let scriptSource = """
         if application "Google Chrome" is running then
             tell application "Google Chrome"
@@ -152,7 +163,6 @@ class DistractionMonitor: ObservableObject {
                             end repeat
                         end try
                     end repeat
-                    -- Close in reverse order so indices stay valid
                     repeat with i from (count of tabsToClose) to 1 by -1
                         try
                             set pair to item i of tabsToClose
@@ -171,8 +181,6 @@ class DistractionMonitor: ObservableObject {
             script.executeAndReturnError(&error)
             if let err = error { print("Close tab error: \(err)") }
         }
-        
-        resetCounter()
         
         DispatchQueue.main.async {
             NotificationCenter.default.post(name: NSNotification.Name("showDistractionPunishment"), object: nil)

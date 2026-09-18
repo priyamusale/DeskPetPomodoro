@@ -11,99 +11,104 @@ struct PetOverlayView: View {
     @State private var pulseScale: CGFloat = 1.0
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Color.clear
+        VStack(spacing: 0) {
+            // Speech bubble lives here — ABOVE the pet, in unconstrained space
+            if let message = petVM.speechMessage {
+                HStack {
+                    SpeechBubbleView(text: message)
+                        .transition(AnyTransition.scale(scale: 0.8, anchor: .bottom).combined(with: .opacity))
+                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: petVM.speechMessage)
+                    Spacer()
+                }
+                .padding(.leading, 4)
+            } else {
+                Spacer().frame(height: 4)
+            }
             
-            PetCanvasView(
-                variant: petPreferences.selectedVariant,
-                frameIndex: petVM.walkFrame,
-                facingRight: true,
-                isSleeping: petVM.isSleeping
-            )
-            .frame(width: 72, height: 72)
-            .scaleEffect(pulseScale)
-            .onChange(of: petVM.showTreat) { newValue in
-                if newValue {
-                    // Scale up
-                    withAnimation(.easeOut(duration: 0.15)) {
-                        pulseScale = 1.3
-                    }
-                    // Scale back down explicitly
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
-                            pulseScale = 1.0
+            // Timer badges
+            let showDistractionTimer = distractionMonitor.consecutiveDistractedSeconds > 0
+            if showDistractionTimer {
+                HStack {
+                    Text(String(format: "%02d:%02d", distractionMonitor.consecutiveDistractedSeconds / 60, distractionMonitor.consecutiveDistractedSeconds % 60))
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(Color.red.opacity(0.85))
+                        .cornerRadius(6)
+                        .shadow(radius: 2)
+                    Spacer()
+                }
+                .padding(.leading, 30)
+            } else if pomodoroVM.isRunning {
+                HStack {
+                    Text(pomodoroVM.timePassedString)
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundColor(pomodoroVM.phase == .work ? Color(hex: "#4A4A4A") : .blue)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(Color.white.opacity(0.85))
+                        .cornerRadius(6)
+                        .shadow(radius: 2)
+                    Spacer()
+                }
+                .padding(.leading, 30)
+            }
+            
+            // Pet canvas — fixed 140×140
+            ZStack(alignment: .bottom) {
+                Color.clear
+                
+                PetCanvasView(
+                    variant: petPreferences.selectedVariant,
+                    frameIndex: petVM.walkFrame,
+                    facingRight: true,
+                    isSleeping: petVM.isSleeping
+                )
+                .frame(width: 72, height: 72)
+                .scaleEffect(pulseScale)
+                .onChange(of: petVM.showTreat) { newValue in
+                    if newValue {
+                        withAnimation(.easeOut(duration: 0.15)) { pulseScale = 1.3 }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) { pulseScale = 1.0 }
                         }
                     }
                 }
-            }
-            .background(Color.white.opacity(0.001))
-            .contentShape(Rectangle())
-            .onTapGesture {
-                openWindow(id: "PomodoroWindow")
-                NSApp.activate(ignoringOtherApps: true)
-                NotificationCenter.default.post(name: Notification.Name("showPomodoroTimer"), object: nil)
-                // If sleeping, tapping also wakes it up (handled if timer starts, but we can immediately wake it)
-                if petVM.isSleeping {
-                    petVM.isSleeping = false
-                    petVM.showSpeech("Hi \(petVM.userFirstName)!")
+                .background(Color.white.opacity(0.001))
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    openWindow(id: "PomodoroWindow")
+                    NSApp.activate(ignoringOtherApps: true)
+                    NotificationCenter.default.post(name: Notification.Name("showPomodoroTimer"), object: nil)
+                    if petVM.isSleeping {
+                        petVM.isSleeping = false
+                        petVM.showSpeech("Hi \(petVM.userFirstName)!")
+                    }
+                }
+                
+                if petVM.showTreat {
+                    TreatParticleView()
+                        .frame(width: 100, height: 100)
+                        .offset(y: -40)
+                }
+                
+                if coworkingVM.isCoworkerActive {
+                    Image(systemName: "heart.fill")
+                        .foregroundColor(.red)
+                        .font(.system(size: 18))
+                        .offset(x: 0, y: -50)
+                        .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 2)
+                        .transition(.scale.combined(with: .opacity))
+                        .animation(.spring(response: 0.4, dampingFraction: 0.5), value: coworkingVM.isCoworkerActive)
                 }
             }
-            
-            if petVM.showTreat {
-                TreatParticleView()
-                    .frame(width: 100, height: 100)
-                    .offset(y: -40)
-            }
-            
-            let timerOffset: CGFloat = petVM.speechMessage != nil ? -120 : -75
-            
-            // Only show timer if there's no speech bubble (Wait, now we show it always)
-            if distractionMonitor.consecutiveDistractedSeconds > 0 {
-                Text(String(format: "%02d:%02d", distractionMonitor.consecutiveDistractedSeconds / 60, distractionMonitor.consecutiveDistractedSeconds % 60))
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(Color.red.opacity(0.85))
-                    .cornerRadius(6)
-                    .offset(y: timerOffset)
-                    .shadow(radius: 2)
-                    .animation(.spring(), value: timerOffset)
-            } else if pomodoroVM.isRunning {
-                Text(pomodoroVM.timePassedString)
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .foregroundColor(pomodoroVM.phase == .work ? Color(hex: "#4A4A4A") : .blue)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(Color.white.opacity(0.85))
-                    .cornerRadius(6)
-                    .offset(y: timerOffset)
-                    .shadow(radius: 2)
-                    .animation(.spring(), value: timerOffset)
-            }
-            
-            if let message = petVM.speechMessage {
-                SpeechBubbleView(text: message)
-                    .offset(y: -80) // Position above the pet
-                    // Add a gentle pop-in animation
-                    .transition(AnyTransition.scale(scale: 0.8, anchor: .bottom).combined(with: .opacity))
-                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: petVM.speechMessage)
-            }
-            
-            if coworkingVM.isCoworkerActive {
-                Image(systemName: "heart.fill")
-                    .foregroundColor(.red)
-                    .font(.system(size: 18))
-                    .offset(x: 0, y: -50)
-                    .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 2)
-                    .transition(.scale.combined(with: .opacity))
-                    .animation(.spring(response: 0.4, dampingFraction: 0.5), value: coworkingVM.isCoworkerActive)
-            }
+            .frame(width: 140, height: 140)
         }
-        .frame(width: 140, height: 140)
+        .frame(width: 280, height: 200, alignment: .bottomLeading)
     }
 }
-import SwiftUI
+
 
 struct SpeechBubbleView: View {
     let text: String
@@ -121,8 +126,8 @@ struct SpeechBubbleView: View {
                     .fill(Color.white)
                     .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
             )
-            // Padding so the shadow and tail don't get clipped
             .padding(.bottom, 12)
+            .fixedSize() // prevent parent from squishing it
     }
 }
 
