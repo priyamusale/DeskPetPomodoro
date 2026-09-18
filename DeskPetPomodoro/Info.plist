@@ -24,5 +24,7 @@
 	<string>14.0</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>DeskPet needs to monitor your Chrome tabs to detect distracting websites and keep you focused.</string>
 </dict>
 </plist>
