@@ -166,9 +166,9 @@ class DistractionMonitor: ObservableObject {
     
     private func punishAndCloseTab() {
         resetCounter()
-        // Trigger the walk animation; the actual tab close fires via executePunishment
+        // The walk animation was already triggered at 10 mins. Now we actually close it.
         DispatchQueue.main.async {
-            NotificationCenter.default.post(name: NSNotification.Name("walkToCloseTab"), object: nil)
+            NotificationCenter.default.post(name: NSNotification.Name("executePunishment"), object: nil)
         }
     }
     

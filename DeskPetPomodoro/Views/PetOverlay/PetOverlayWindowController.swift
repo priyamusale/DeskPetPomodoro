@@ -2,6 +2,12 @@ import Cocoa
 import SwiftUI
 import Combine
 
+class UnconstrainedWindow: NSWindow {
+    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
+        return frameRect // Do not clamp to screen bounds
+    }
+}
+
 class PetOverlayWindowController: NSWindowController {
     private var cancellables = Set<AnyCancellable>()
     private let pomodoroVM: PomodoroViewModel
@@ -24,7 +30,7 @@ class PetOverlayWindowController: NSWindowController {
         
         let rect = NSRect(x: startX, y: startY, width: 280, height: 200)
         
-        let window = NSWindow(contentRect: rect,
+        let window = UnconstrainedWindow(contentRect: rect,
                               styleMask: .borderless,
                               backing: .buffered,
                               defer: false)
