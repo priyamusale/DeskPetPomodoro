@@ -108,7 +108,7 @@ struct PetOverlayView: View {
                         .animation(.spring(response: 0.4, dampingFraction: 0.5), value: coworkingVM.isCoworkerActive)
                 }
             }
-            .frame(width: 140, height: 80)
+            .frame(width: 140, height: 72)
         }
         .frame(width: 280, height: 200, alignment: .bottomLeading)
     }
@@ -131,7 +131,7 @@ struct SpeechBubbleView: View {
                     .fill(Color.white)
                     .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
             )
-            .padding(.bottom, 12)
+            .padding(.bottom, 2)
             .fixedSize() // prevent parent from squishing it
     }
 }
