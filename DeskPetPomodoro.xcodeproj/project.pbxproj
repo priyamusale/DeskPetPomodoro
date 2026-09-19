@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0446B5FF05F3F6C2BF35143B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BECA9D0DCCA51DF550977BA9 /* Assets.xcassets */; };
 		0F2DC632347BD1F2270CC6C3 /* Kristi-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 535A3C1CA3A488EE3AC6AA1F /* Kristi-Regular.ttf */; };
 		164C5EBF99C5241CDFC816CD /* TodoPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2A319D69488239D2D98DDA /* TodoPanelView.swift */; };
 		1C36128C6BE8F58958067361 /* WagerCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E7CBA1AB91DD0E63E3F515 /* WagerCheckInView.swift */; };
@@ -55,6 +54,7 @@
 		35B22E4B4B0F8D68C60A7B8E /* TodoTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoTask.swift; sourceTree = "<group>"; };
 		3C9D84A7D9226FD2F73CFAA3 /* DeskPetPomodoroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskPetPomodoroApp.swift; sourceTree = "<group>"; };
 		3CF669CDEA159F3A54F8F19E /* PetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetViewModel.swift; sourceTree = "<group>"; };
+		400423C9B9741C07A326FED2 /* DeskPetPomodoro.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DeskPetPomodoro.entitlements; sourceTree = "<group>"; };
 		4020682B93CE951CBB77AF6D /* GoalsPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsPanelView.swift; sourceTree = "<group>"; };
 		4260029A49E31C94B9AE7ED7 /* sleeping_cat_new.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = sleeping_cat_new.jpg; sourceTree = "<group>"; };
 		47A40B19A823C77C1AB1BFE0 /* Goal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Goal.swift; sourceTree = "<group>"; };
@@ -75,7 +75,6 @@
 		BB39024BCD4A5BD5F2A0E9A3 /* PetPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetPickerView.swift; sourceTree = "<group>"; };
 		BB8D6A83976899933CFDA0F2 /* cat_walking.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cat_walking.png; sourceTree = "<group>"; };
 		BD2A319D69488239D2D98DDA /* TodoPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoPanelView.swift; sourceTree = "<group>"; };
-		BECA9D0DCCA51DF550977BA9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C5C05F53D76AA7F498BF8166 /* PetOverlayWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetOverlayWindowController.swift; sourceTree = "<group>"; };
 		C74C331B2C6AC985570FBF20 /* sleeping_dog_new.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = sleeping_dog_new.jpg; sourceTree = "<group>"; };
 		DAD86CFAB729D10B5165241B /* TimerPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerPanelView.swift; sourceTree = "<group>"; };
@@ -87,14 +86,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		0665EA51EBBB0C2FCC429F2E /* DeskPetPomodoro */ = {
-			isa = PBXGroup;
-			children = (
-				BECA9D0DCCA51DF550977BA9 /* Assets.xcassets */,
-			);
-			path = DeskPetPomodoro;
-			sourceTree = "<group>";
-		};
 		0EAFCD7412780919F007241F /* PetOverlay */ = {
 			isa = PBXGroup;
 			children = (
@@ -239,14 +230,21 @@
 			isa = PBXGroup;
 			children = (
 				02F49E323969C3CC62514A90 /* Assets.xcassets */,
+				400423C9B9741C07A326FED2 /* DeskPetPomodoro.entitlements */,
 				4C220F54BBA4C510274B135B /* Info.plist */,
 				455BF79635EA9DCCAD078C1D /* App */,
-				0665EA51EBBB0C2FCC429F2E /* DeskPetPomodoro */,
 				3F902A6EA31EB76377FEB3C2 /* Extensions */,
 				2B596DDE0632650F71673CC5 /* Models */,
 				38EBBAC9F42EFB8EEF211AFE /* Resources */,
 				4B5BF5C42E7EB84BDE0482B9 /* ViewModels */,
 				3E0E847EDCC8838776FDD499 /* Views */,
+			);
+			path = DeskPetPomodoro;
+			sourceTree = "<group>";
+		};
+		"TEMP_4E97EDF8-CA06-4887-B032-7E1F176466ED" /* DeskPetPomodoro */ = {
+			isa = PBXGroup;
+			children = (
 			);
 			path = DeskPetPomodoro;
 			sourceTree = "<group>";
@@ -308,7 +306,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AB8D05BADC263E17B6F026C9 /* Assets.xcassets in Resources */,
-				0446B5FF05F3F6C2BF35143B /* Assets.xcassets in Resources */,
 				5D93FD3CA4E1F1267F597DDB /* DawningofaNewDay.ttf in Resources */,
 				0F2DC632347BD1F2270CC6C3 /* Kristi-Regular.ttf in Resources */,
 				91A8FF235535F58E4EFD121A /* cat_walking.png in Resources */,
@@ -363,8 +360,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = DeskPetPomodoro/DeskPetPomodoro.entitlements;
 				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = DeskPetPomodoro/DeskPetPomodoro.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_PREVIEWS = YES;
@@ -502,8 +499,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = DeskPetPomodoro/DeskPetPomodoro.entitlements;
 				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = DeskPetPomodoro/DeskPetPomodoro.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_PREVIEWS = YES;
